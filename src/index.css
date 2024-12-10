@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-bg-default: rgb(247, 233, 233);
+  --color-sidebar-bg: #ffffff;
+  --color-main-areaMid: #ffffffda;
+  --color-theme-switch-ball: #dc3030;
+}
+
+[data-theme="colored"] {
+  --color-bg-default: #f7c8c8;
+  --color-sidebar-bg: #f7c8c8;
+  --color-main-areaMid: #ffffff;
+  --color-theme-switch-ball: #3066dc;
+}
+
+body {
+  background-color: var(--color-bg-default);
+}
