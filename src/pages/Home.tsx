@@ -4,6 +4,7 @@ import { ExamDTO } from "../interfaces/DTOs"; // Import ExamDTO
 import { getNewExam } from "../utils/aspEndpoints";
 import Cookies from "js-cookie";
 import PopupAlert from "../components/PopupAlert";
+import { compress, decompress } from "lz-string";
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
@@ -11,30 +12,36 @@ const Home: React.FC = () => {
   const [examData, setExamData] = useState<ExamDTO | null>(null);
 
   useEffect(() => {
-    const examData = Cookies.get("draft");
+    const examData = localStorage.getItem("draft");
     if (examData) {
       setShowPopup(true);
     }
   }, []);
 
-  const handleStartExam = () => {
+  const handleStartExam = async () => {
     // Example of initializing exam data (use your actual structure here)
-    const initialData = getNewExam();
+    const initialData = await getNewExam();
 
-    if (initialData) {
-    }
-    alert("Error generating exam");
+    if (initialData != null) {
+      console.log(initialData);
+      const compresedData = compress(JSON.stringify(initialData));
+      localStorage.setItem("draft", compresedData);
+      navigate("/exam");
+    } else alert("Error generating exam");
   };
 
   const handleOnLoadDraft = () => {
     setShowPopup(false);
-    if (examData) navigate("/exam", { state: { examData } });
-    else alert("Exam has expired :(");
+    if (examData) navigate("/exam");
+    else {
+      alert("Exam has expired :(");
+      localStorage.removeItem("draft");
+    }
   };
 
   const handleOnDeleteDraft = () => {
     setShowPopup(false);
-    Cookies.remove("draft");
+    localStorage.removeItem("draft");
   };
 
   return (

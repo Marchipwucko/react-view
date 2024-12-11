@@ -3,6 +3,7 @@ import { FiCheckCircle, FiCircle } from "react-icons/fi";
 
 interface Question {
   id: number;
+  text: string;
   answered: boolean;
 }
 
@@ -18,10 +19,10 @@ const LeftSidebar: React.FC<{
           {questions.map((question) => (
             <div
               onClick={() => onQuestionClick(question.id)}
-              key={question.id}
+              key={question.text}
               className="flex items-center justify-center p-1 bg-white rounded shadow hover:bg-gray-200 text-center"
             >
-              <span className="font-semibold text-xs">{question.id}</span>
+              <span className="font-semibold text-xs">{question.text}</span>
               {question.answered ? (
                 <FiCheckCircle className="text-green-500 text-xs ml-1" />
               ) : (

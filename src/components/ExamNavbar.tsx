@@ -8,7 +8,7 @@ export default function ExamNavbar() {
         <ThemeSwitch />
       </div>
 
-      <h1 className="text-2xl mx-auto pr-16 font-bold">Exam Application</h1>
+      <h1 className="text-2xl mx-auto pr-16 font-bold">Листови.ПГЕЕ</h1>
     </div>
   );
 }

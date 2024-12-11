@@ -1,23 +1,23 @@
 export interface AnswerDTO {
-  id: number;
-  questionId: number;
-  text?: string;
-  pictureId?: string;
-  correct?: boolean;
-  selected: boolean;
+  Id: number;
+  QuestionId: number;
+  Text?: string;
+  PictureId?: string;
+  Correct?: boolean;
+  Selected: boolean;
 }
 
 export interface QuestionDTO {
-  id: number;
-  text: string;
-  pictureId?: string;
-  points: number;
-  correctAnswersCount: number;
-  answers: AnswerDTO[];
+  Id: number;
+  Text: string;
+  PictureId?: string;
+  Points: number;
+  CorrectAnswersCount: number;
+  Answers: AnswerDTO[];
 }
 
 export interface ExamDTO {
-  hash: string;
-  endTime: string; // ISO string format
-  questions: QuestionDTO[];
+  Hash: string;
+  EndTime: string; // ISO string format
+  Questions: QuestionDTO[];
 }
