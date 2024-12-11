@@ -36,6 +36,15 @@ const Exam: React.FC = () => {
     initialData!.Questions[0]
   );
   const [currQuestionIndex, setCurrQuestionIndex] = useState<number>(0);
+  const [sidebarQuestions, setSidebarQuestions] = useState(
+    examData.Questions.map((question, i) => {
+      return {
+        id: question.Id,
+        text: (i + 1).toString(),
+        answered: false,
+      };
+    })
+  );
 
   useEffect(() => {
     setCurrQuestion(examData.Questions[currQuestionIndex]);
@@ -59,19 +68,23 @@ const Exam: React.FC = () => {
     setCurrQuestion((draftData as ExamDTO).Questions[0]);
   }, []);
 
-  const questions = examData.Questions.map((question, i) => {
-    return {
-      id: question.Id,
-      text: (i + 1).toString(),
-      answered: false,
-    };
-  });
-
   useEffect(() => {
     if (examData && examData.EndTime) {
       const compresedData = compress(JSON.stringify(examData));
       localStorage.setItem("draft", compresedData);
     }
+  }, [examData]);
+
+  useEffect(() => {
+    setSidebarQuestions(
+      examData.Questions.map((question, i) => {
+        return {
+          id: question.Id,
+          text: (i + 1).toString(),
+          answered: question.Answers.some((a) => a.Selected),
+        };
+      })
+    );
   }, [examData]);
 
   const handleAnswerSelection = (questionId: number, answerId: number) => {
@@ -130,7 +143,7 @@ const Exam: React.FC = () => {
 
       <div className="min-h-screen bg-bg_sidebar flex">
         <LeftSidebar
-          questions={questions}
+          questions={sidebarQuestions}
           onQuestionClick={handleGoToQuestion}
         />
 
