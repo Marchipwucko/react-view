@@ -1,4 +1,4 @@
-import { ExamDTO } from "../interfaces/DTOs";
+import { ExamDTO, ResultDTO } from "../interfaces/DTOs";
 
 export const getNewExam: () => Promise<ExamDTO | null> = async () => {
   try {
@@ -24,9 +24,9 @@ export const getNewExam: () => Promise<ExamDTO | null> = async () => {
   }
 };
 
-export const submitExam: (exam: ExamDTO) => Promise<ExamDTO | string> = async (
+export const submitExam: (
   exam: ExamDTO
-) => {
+) => Promise<ResultDTO | string> = async (exam: ExamDTO) => {
   const response = await fetch("https://localhost:7018/submit", {
     method: "POST",
     headers: {
@@ -38,7 +38,7 @@ export const submitExam: (exam: ExamDTO) => Promise<ExamDTO | string> = async (
   if (!response.ok) return `error: ${response.statusText}`;
 
   const data = await response.json();
-  if (data && (data as ExamDTO)) return data as ExamDTO;
+  if (data && (data as ResultDTO)) return data as ResultDTO;
 
   return "error: Data is in wrong format";
 };

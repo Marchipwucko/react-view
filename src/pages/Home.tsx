@@ -32,8 +32,9 @@ const Home: React.FC = () => {
 
   const handleOnLoadDraft = () => {
     setShowPopup(false);
-    if (examData) navigate("/exam");
-    else {
+    if (localStorage.getItem("draft")) {
+      navigate("/exam");
+    } else {
       alert("Exam has expired :(");
       localStorage.removeItem("draft");
     }

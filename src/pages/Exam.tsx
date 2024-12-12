@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { FiCheckCircle, FiCircle } from "react-icons/fi";
 import ExamNavbar from "../components/ExamNavbar";
-import { ExamDTO, QuestionDTO, AnswerDTO } from "../interfaces/DTOs";
+import { ExamDTO, QuestionDTO, AnswerDTO, ResultDTO } from "../interfaces/DTOs";
 import LeftSidebar from "../components/exam/LeftSidebar";
 import Question from "../components/exam/Question";
 import Cookies from "js-cookie";
@@ -33,26 +33,29 @@ const Exam: React.FC = () => {
 
   const [examData, setExamData] = useState<ExamDTO>(initialData!);
   const [currQuestion, setCurrQuestion] = useState<QuestionDTO>(
-    initialData!.Questions[0]
+    initialData!.questions[0]
   );
   const [currQuestionIndex, setCurrQuestionIndex] = useState<number>(0);
   const [sidebarQuestions, setSidebarQuestions] = useState(
-    examData.Questions.map((question, i) => {
+    examData.questions.map((question, i) => {
       return {
-        id: question.Id,
+        id: question.id,
         text: (i + 1).toString(),
         answered: false,
+        correct: !examData.isResult
+          ? null
+          : !question.answers.some((x) => x.correct != x.selected),
       };
     })
   );
 
   useEffect(() => {
-    setCurrQuestion(examData.Questions[currQuestionIndex]);
+    setCurrQuestion(examData.questions[currQuestionIndex]);
   }, [currQuestionIndex]);
 
   useEffect(() => {
     setCurrQuestionIndex(
-      examData.Questions.findIndex((x) => x.Id == currQuestion.Id)
+      examData.questions.findIndex((x) => x.id == currQuestion.id)
     );
   }, [currQuestion]);
 
@@ -65,11 +68,11 @@ const Exam: React.FC = () => {
       return;
     }
     setExamData(draftData as ExamDTO);
-    setCurrQuestion((draftData as ExamDTO).Questions[0]);
+    setCurrQuestion((draftData as ExamDTO).questions[0]);
   }, []);
 
   useEffect(() => {
-    if (examData && examData.EndTime) {
+    if (examData && examData.endTime) {
       const compresedData = compress(JSON.stringify(examData));
       localStorage.setItem("draft", compresedData);
     }
@@ -77,28 +80,33 @@ const Exam: React.FC = () => {
 
   useEffect(() => {
     setSidebarQuestions(
-      examData.Questions.map((question, i) => {
+      examData.questions.map((question, i) => {
         return {
-          id: question.Id,
+          id: question.id,
           text: (i + 1).toString(),
-          answered: question.Answers.some((a) => a.Selected),
+          answered: question.answers.some((a) => a.selected),
+          correct: !examData.isResult
+            ? null
+            : !question.answers.some((x) => x.correct != x.selected),
         };
       })
     );
   }, [examData]);
 
   const handleAnswerSelection = (questionId: number, answerId: number) => {
+    if (examData.isResult) return;
+
     console.log(`Selecting question[${questionId}].Answer[${answerId}]`);
 
     // Update examData and currQuestion together in a functional update
     setExamData((prevData) => {
-      const updatedQuestions = prevData.Questions.map((question) =>
-        question.Id === questionId
+      const updatedQuestions = prevData.questions.map((question) =>
+        question.id === questionId
           ? {
               ...question,
-              Answers: question.Answers.map((answer) =>
-                answer.Id === answerId
-                  ? { ...answer, Selected: !answer.Selected }
+              answers: question.answers.map((answer) =>
+                answer.id === answerId
+                  ? { ...answer, selected: !answer.selected }
                   : answer
               ),
             }
@@ -107,7 +115,7 @@ const Exam: React.FC = () => {
 
       // After updating examData, update the current question based on updated data
       const updatedCurrQuestion = updatedQuestions.find(
-        (q) => q.Id === currQuestion.Id
+        (q) => q.id === currQuestion.id
       );
 
       if (updatedCurrQuestion) {
@@ -116,13 +124,13 @@ const Exam: React.FC = () => {
 
       return {
         ...prevData,
-        Questions: updatedQuestions,
+        questions: updatedQuestions,
       };
     });
   };
 
   const handleGoToQuestion = (questionId: number) => {
-    const targetQuestion = examData.Questions.find((q) => q.Id === questionId);
+    const targetQuestion = examData.questions.find((q) => q.id === questionId);
     if (targetQuestion) {
       setCurrQuestion(targetQuestion);
     }
@@ -133,7 +141,10 @@ const Exam: React.FC = () => {
     if (typeof response === "string" && response.startsWith("error: ")) {
       alert(response);
     } else {
-      //TODO: redirect to result page and display results
+      const result: ResultDTO = response as ResultDTO;
+      localStorage.setItem("resultPoints", result.points.toString());
+      setExamData(result.exam);
+      navigate("/result");
     }
   };
 
@@ -152,7 +163,10 @@ const Exam: React.FC = () => {
           {/* Progress and Header */}
           <div className="flex justify-between items-center mb-4">
             <div className="flex items-center gap-4">
-              <p className="text-gray-700">Отговорени 0 от 45</p>
+              <p className="text-gray-700">
+                Отговорени {sidebarQuestions.filter((q) => q.answered).length}{" "}
+                от 45
+              </p>
             </div>
           </div>
 
@@ -161,7 +175,6 @@ const Exam: React.FC = () => {
             id={(currQuestionIndex + 1).toString()}
             onAnswerSelect={handleAnswerSelection}
           />
-
           {/* Navigation Buttons */}
           <div className="flex justify-between mt-6">
             <button
@@ -183,15 +196,21 @@ const Exam: React.FC = () => {
           </div>
         </main>
 
-        {/* Right Sidebar */}
-        <aside className="bg-bg_primary w-1/6 p-4 flex flex-col justify-between">
-          <button
-            className="bg-bg_primary p-3 rounded shadow hover:bg-gray-200"
-            onClick={handleSubmit}
-          >
-            Предай
-          </button>
-        </aside>
+        {examData.isResult ? (
+          <></>
+        ) : (
+          <>
+            {/* Right Sidebar */}
+            <aside className="bg-bg_primary w-1/6 p-4 flex flex-col justify-between">
+              <button
+                className="bg-[#ff8484] p-3 rounded shadow hover:bg-[#ffc3c3] hover:border-2 hover:border-[#fffeab]"
+                onClick={handleSubmit}
+              >
+                Предай
+              </button>
+            </aside>
+          </>
+        )}
       </div>
     </>
   );

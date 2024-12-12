@@ -3,8 +3,8 @@
 @tailwind utilities;
 
 :root {
-  --color-bg-default: rgb(247, 233, 233);
-  --color-sidebar-bg: #ffffff;
+  --color-bg-default: #f7e9e9;
+  --color-sidebar-bg: #f7e9e9;
   --color-main-areaMid: #ffffffda;
   --color-theme-switch-ball: #dc3030;
 }
